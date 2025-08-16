@@ -1,5 +1,4 @@
-
-from tools.WebSearch import WebSearch
+from tools.WebSearch import WebSearch, browse_and_extract
 # from tools.imageGenerator import generate_chart
 from model.DeepSeek import DeepSeek
 from langchain.callbacks.base import BaseCallbackHandler
@@ -101,8 +100,14 @@ tool_sendMail = Tool(
     ),
 )
 
+tool_browser_scrabing = Tool(
+    name="Browser Scraper",
+    func=browse_and_extract,
+    description="Open a website URL and extract visible text content. Use this tools to get more information about the topic user mentioned"
+)
+
 #get Tools
-tools = [tool_search,tool_generateImage,tool_sendMail]
+tools = [tool_search,tool_generateImage,tool_sendMail,tool_browser_scrabing]
 
 
 
@@ -142,7 +147,6 @@ for msg in past_memory:
 agent = initialize_agent(
     llm=llm,
     tools=tools,
-    
     agent="chat-conversational-react-description",
     verbose=True,
     memory=memory,
