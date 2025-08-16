@@ -205,7 +205,7 @@ def test():
 
 
 @app.route("/ask", methods=['POST'])
-def chat():
+def ask():
     if request.method == 'POST':
         history_data = []
 
