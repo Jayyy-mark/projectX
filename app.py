@@ -187,7 +187,7 @@ def chat():
             print("✅ Generate image tool was used")
             tool_used_flag["generate_image"]=False
             image = "static/img/chart.png"
-            return jsonify({'response' : response['output'], 'contain_img' : f"http://192.168.142.196:5003/static/img/chart.png"})
+            return jsonify({'response' : response['output'], 'contain_img' : f"https://projectx-ak3q.onrender.com/static/img/chart.png"})
         else:
             print("❌ Generate image tool was NOT used")
             return jsonify({'response' : response['output']})
@@ -223,7 +223,7 @@ def ask():
             print("✅ Generate image tool was used")
             tool_used_flag["generate_image"]=False
             image = "static/img/chart.png"
-            return jsonify({'response' : response['output'], 'contain_img' : f"http://192.168.142.196:5003/static/img/chart.png"})
+            return jsonify({'response' : response['output'], 'contain_img' : f"https://projectx-ak3q.onrender.com/static/img/chart.png"})
         else:
             print("❌ Generate image tool was NOT used")
             return jsonify({'response' : response['output']})
