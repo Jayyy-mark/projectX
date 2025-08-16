@@ -8,7 +8,7 @@ class WebSearch:
 
     #constructor
     def __init__(self, api_key=None,cache_ttl=300):
-        self.api_key = os.getenv['SERPAPI_KEY']
+        self.api_key = os.getenv["SERPAPI_KEY"]
         self.cache_ttl = cache_ttl
         self.cache = {}
     
@@ -78,6 +78,7 @@ def browse_and_extract(url):
 
 
     
+
 
 
 
