@@ -209,7 +209,7 @@ def chat():
     if request.method == 'POST':
         history_data = []
 
-        user_input = request.form['prompt']
+        user_input = request.form['user_message']
         uploaded_file=None
         if "file" in request.files and request.files["file"].filename != "":
         # File exists and is not empty
