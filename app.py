@@ -15,6 +15,7 @@ from tools.Mail import send_mail
 from pydantic import BaseModel, Field
 from flask_cors import CORS
 from model.Gemini import GeminiChatbot
+from langchain.chat_models import ChatGoogleGenerativeAI
 
 #create flask application
 app = Flask(__name__)
@@ -72,7 +73,12 @@ def generate_chart(text,filename="chart.png"):
 
 
 #create LLM
-llm = GeminiChatbot()
+llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    temperature=0,
+    google_api_key=os.getenv("GOOGLE_API_KEY")
+)
+
 
 web = WebSearch()
 tool_search = Tool(
