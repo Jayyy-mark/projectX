@@ -3,7 +3,7 @@ import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 class GeminiChatbot:
-    def __init__(self, model="gemini-1.5-flash", temperature=0):
+    def __init__(self, model="gemini-2.5-flash", temperature=0):
         """Initialize the Gemini LLM with API key and settings."""
         self.model_name = model
         self.temperature = temperature
@@ -22,4 +22,5 @@ class GeminiChatbot:
         """Send a prompt to Gemini and return the response text."""
         response = self.llm.invoke(prompt)
         return response.content if hasattr(response, "content") else str(response)
+
 
