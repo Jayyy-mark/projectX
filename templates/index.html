@@ -721,11 +721,11 @@
 
             //<============ for data only ===========>
 
-            async function getResponse(user_message, file) {
+            async function getResponse(user_message) {
                 setLoading(true);
                 return new Promise((resolve, reject) => {
                     $.ajax({
-                        url: '/chat',
+                        url: '/ask',
                         type: 'POST',
                         data: { user_message: user_message },
                         success: function (response) {
@@ -992,5 +992,6 @@
         });
     </script>
 </body>
+
 
 </html>
