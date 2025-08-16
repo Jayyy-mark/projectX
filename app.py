@@ -74,7 +74,7 @@ def generate_chart(text,filename="chart.png"):
 
 #create LLM
 llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash",
+    model="gemini-2.5-flash",
     temperature=0,
     google_api_key=os.getenv("GOOGLE_API_KEY")
 )
