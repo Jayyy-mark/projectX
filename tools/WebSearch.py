@@ -1,6 +1,6 @@
 import os
 import time
-from serpapi.google_search_results import GoogleSearch
+from serpapi.google_search import GoogleSearch
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
@@ -78,4 +78,5 @@ def browse_and_extract(url):
 
 
     
+
 
