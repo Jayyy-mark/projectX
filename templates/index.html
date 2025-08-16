@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuardX</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        html {
+            height: 100%;
+            /* Ensure HTML takes full height */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            /* Ensure body takes full height */
+            overflow: hidden;
+            /* Prevent body from scrolling */
+            background-color: #f3f4f6;
+            /* bg-gray-100 */
+        }
+
+        /* Styles for main content scrollbar (always visible if content overflows) */
+        .main-content-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .main-content-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .main-content-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .main-content-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Firefox scrollbar for main content */
+        .main-content-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #888 #f1f1f1;
+        }
+
+        /* Styles for textarea scrollbar (only on hover) */
+        .textarea-scrollbar-on-hover {
+            /* Hide scrollbar by default */
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        .textarea-scrollbar-on-hover::-webkit-scrollbar {
+            width: 0px;
+            /* Chrome, Safari, Opera */
+            height: 0px;
+        }
+
+        .textarea-scrollbar-on-hover:hover {
+            /* Show scrollbar on hover */
+            scrollbar-width: thin;
+            /* Firefox */
+            -ms-overflow-style: scrollbar;
+            /* IE and Edge */
+        }
+
+        .textarea-scrollbar-on-hover:hover::-webkit-scrollbar {
+            width: 8px;
+            /* Chrome, Safari, Opera */
+            height: 8px;
+        }
+
+        .textarea-scrollbar-on-hover:hover::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .textarea-scrollbar-on-hover:hover::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .textarea-scrollbar-on-hover:hover::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Dot pulse loading animation */
+        .dot-pulse {
+            position: relative;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            /* blue-500 */
+            animation: dotPulse 1s ease-in-out infinite;
+        }
+
+        .dot-pulse-2 {
+            animation-delay: 0.2s;
+        }
+
+        .dot-pulse-3 {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes dotPulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.8);
+                opacity: 0.7;
+            }
+        }
+
+        /* Sidebar specific styles */
+        .sidebar {
+            width: 256px;
+            /* w-64 */
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 20;
+            /* Higher than main content */
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .main-content.shifted {
+            margin-left: 256px;
+            /* Equal to sidebar width */
+        }
+
+        /* Responsive adjustments for sidebar */
+        @media (min-width: 768px) {
+
+            /* md breakpoint */
+            .sidebar {
+                transform: translateX(0);
+                /* Always open on desktop */
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 256px;
+                /* Always shifted on desktop */
+            }
+
+            .sidebar-toggle-button {
+                display: none;
+                /* Hide toggle button on desktop */
+            }
+        }
+
+        /* Typing animation for text */
+        .typing-animation {
+            overflow: hidden;
+            /* Ensures the text is hidden until it's "typed" */
+            white-space: pre-wrap;
+            /* Keeps whitespace and wraps text */
+            border-right: 2px solid #3b82f6;
+            /* Blinking cursor effect */
+            animation: typing 2s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        /* We'll use JavaScript to set the animation duration based on text length */
+        @keyframes typing {
+            from {
+                width: 0;
+            }
+
+            to {
+                width: 100%;
+            }
+        }
+
+        /* The blinking cursor animation */
+        @keyframes blink-caret {
+
+            from,
+            to {
+                border-color: transparent;
+            }
+
+            50% {
+                border-color: #3b82f6;
+            }
+        }
+
+        /* Custom styles for the input section to mimic Gemini */
+        .input-section-container {
+            position: relative;
+            background-color: #ffffff;
+            padding: 1rem;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-top-left-radius: 0.75rem;
+            /* rounded-t-xl */
+            border-top-right-radius: 0.75rem;
+            /* rounded-t-xl */
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            /* Align items to the bottom for textarea */
+            background-color: #f0f4f9;
+            /* Light background for the input area */
+            border-radius: 1.5rem;
+            /* rounded-full-ish */
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            /* border-gray-200 */
+        }
+
+        .input-wrapper textarea {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            resize: none;
+            outline: none;
+            padding: 0.5rem 0;
+            font-size: 1rem;
+            line-height: 1.5;
+            min-height: 24px;
+            /* Adjust based on font size */
+        }
+
+        .attachment-options {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            /* Position above the input box */
+            left: 1rem;
+            right: 1rem;
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            /* Disable interaction when hidden */
+        }
+
+        .attachment-options.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+            /* Enable interaction when open */
+        }
+
+        .attachment-option-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            background-color: #e2e8f0;
+            /* gray-200 */
+            color: #4a5568;
+            /* gray-700 */
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            flex: 1 1 calc(33.333% - 0.75rem);
+            /* For 3 columns with gap */
+            min-width: 80px;
+            /* Ensure buttons don't get too small */
+        }
+
+        .attachment-option-button:hover {
+            background-color: #cbd5e0;
+            /* gray-300 */
+            transform: translateY(-2px);
+        }
+
+        .attachment-option-button svg {
+            margin-bottom: 0.25rem;
+            height: 1.5rem;
+            width: 1.5rem;
+            color: #4299e1;
+            /* blue-500 */
+        }
+
+        /* New styles for the action buttons container */
+        .action-buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            /* Allow buttons to wrap on smaller screens */
+            justify-content: flex-end;
+            /* Align buttons to the right */
+            gap: 0.5rem;
+            /* Space between buttons */
+            padding-top: 0.75rem;
+            /* Space above buttons */
+        }
+
+        .action-buttons-container button {
+            padding: 0.5rem;
+            /* Smaller padding for these buttons */
+            width: 40px;
+            /* Fixed width for icon buttons */
+            height: 40px;
+            /* Fixed height for icon buttons */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen antialiased">
+    <!-- Main container for sidebar and chat content -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 bg-gray-800 text-white p-4 flex flex-col shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold">Menu</h2>
+                <button id="close-sidebar-button"
+                    class="md:hidden p-2 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <button id="new-chat-button"
+                class="flex items-center w-full p-3 mb-4 rounded-lg bg-blue-600 hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                New Chat
+            </button>
+
+            <div class="flex-1 overflow-y-auto main-content-scrollbar mb-4">
+                <h3 class="text-gray-400 text-sm uppercase mb-2">Recents</h3>
+                <ul id="past-chats-list" class="space-y-2">
+                    <!-- Past chats will be dynamically loaded here -->
+                    <li class="p-2 rounded-lg hover:bg-gray-700 cursor-pointer transition duration-200">Chat about AI
+                    </li>
+                    <li class="p-2 rounded-lg hover:bg-gray-700 cursor-pointer transition duration-200">Poem request
+                    </li>
+                    <li class="p-2 rounded-lg hover:bg-gray-700 cursor-pointer transition duration-200">Translation help
+                    </li>
+                </ul>
+            </div>
+
+            <button id="settings-button"
+                class="flex items-center w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Settings
+            </button>
+        </aside>
+
+        <!-- Main chat content area -->
+        <div id="main-content" class="main-content flex flex-col flex-1 overflow-hidden">
+            <!-- Chat header -->
+            <header class="bg-white p-4 shadow-md flex items-center rounded-b-xl">
+                <button id="sidebar-toggle-button"
+                    class="md:hidden p-2 mr-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <h1 class="text-2xl font-bold text-gray-800 flex-1">GuardX</h1>
+                <div id="header"
+                    class="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-blue-700 font-semibold">
+                    Ai <br>
+                </div>
+            </header>
+
+            <!-- Chat messages display area -->
+            <main id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 main-content-scrollbar min-h-0">
+                <div id="initial-message" class="flex items-center justify-center h-full text-gray-500 text-lg">
+                    Start a conversation...
+                </div>
+                <!-- Messages will be appended here by JavaScript -->
+                <div id="loading-indicator" class="hidden flex justify-start">
+                    <div
+                        class="max-w-xs sm:max-w-md lg:max-w-lg p-3 rounded-xl shadow-md bg-white text-gray-800 rounded-bl-none">
+                        <div class="flex items-center space-x-2">
+                            <div class="dot-pulse"></div>
+                            <div class="dot-pulse dot-pulse-2"></div>
+                            <div class="dot-pulse dot-pulse-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Message input area -->
+            <div class="input-section-container flex-shrink-0">
+                <div id="attachment-options" class="attachment-options hidden">
+                    <button id="deep-research-button" class="attachment-option-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.03 0-2.05-.188-3-.53M12 6.042V12m0-5.958a8.967 8.967 0 0 1 6-2.292c1.03 0 2.05.188 3 .53m-12 5.958V12m0 0a8.967 8.967 0 0 1-6 2.292c-1.03 0-2.05-.188-3 .53m12-5.958V12m0 0a8.967 8.967 0 0 0 6 2.292c1.03 0 2.05.188 3 .53M12 12V21" />
+                        </svg>
+                        DeepResearch
+                    </button>
+                    <button id="canvas-button" class="attachment-option-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+                        </svg>
+                        Canvas
+                    </button>
+                    <button id="image-button" class="attachment-option-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5 1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                        </svg>
+                        Image
+                    </button>
+                </div>
+                <div class="input-wrapper">
+                    <button id="attach-button"
+                        class="p-2 mr-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200 ease-in-out transform hover:scale-105"
+                        aria-label="Attach files">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                    <textarea id="message-input" class="flex-1 textarea-scrollbar-on-hover" name="message" rows="1"
+                        placeholder="Message Gemini..." style="max-height: 150px;"></textarea>
+                    <button id="send-button"
+                        class="p-2 ml-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Send message">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="action-buttons-container">
+                    <button id="summarize-button"
+                        class="p-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-200 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Summarize chat">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                    </button>
+                    <button id="rewrite-button"
+                        class="p-2 bg-purple-500 text-white rounded-full shadow-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Rewrite last message">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                    </button>
+                    <button id="creative-button"
+                        class="p-2 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Generate creative text">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11.05 16.05L16 11.05M16 11.05l-5-5m5 5h-10m10 0a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                    <button id="translate-button"
+                        class="p-2 bg-indigo-500 text-white rounded-full shadow-lg hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition duration-200 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Translate last message">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </button>
+                    <button id="elaborate-button"
+                        class="p-2 bg-teal-500 text-white rounded-full shadow-lg hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 transition duration-200 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Elaborate on last message">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+                    <button id="sentiment-button"
+                        class="p-2 bg-yellow-500 text-white rounded-full shadow-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Analyze sentiment">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </button>
+                    <button id="follow-up-button"
+                        class="p-2 bg-rose-500 text-white rounded-full shadow-lg hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-400 transition duration-200 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Suggest follow-up questions">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8.228 9.247a1 1 0 01.707-.293H15.5a1 1 0 01.707 1.707l-4.586 4.586a1 1 0 01-1.414 0l-4.586-4.586a1 1 0 01-.293-.707z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="fileInput" style="display:none;">
+    <script src="{{ url_for('static',filename='js/jquery-3.7.1.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            // Cache selectors for better performance
+            const sidebar = $('#sidebar');
+            const sidebarToggleButton = $('#sidebar-toggle-button');
+            const closeSidebarButton = $('#close-sidebar-button');
+            const mainContent = $('#main-content');
+            const newChatButton = $('#new-chat-button');
+            const pastChatsList = $('#past-chats-list');
+            const settingsButton = $('#settings-button');
+            var file = "";
+            const messagesContainer = $('#messages-container');
+            const messageInput = $('#message-input');
+            const sendButton = $('#send-button');
+            const summarizeButton = $('#summarize-button');
+            const rewriteButton = $('#rewrite-button');
+            const creativeButton = $('#creative-button');
+            const translateButton = $('#translate-button');
+            const elaborateButton = $('#elaborate-button');
+            const sentimentButton = $('#sentiment-button');
+            const followUpButton = $('#follow-up-button');
+            let initialMessage = $('#initial-message');
+            const loadingIndicator = $('#loading-indicator');
+            var image_url = false
+            // New elements for attachment features
+            const attachButton = $('#attach-button');
+            const attachmentOptions = $('#attachment-options');
+            const deepResearchButton = $('#deep-research-button');
+            const canvasButton = $('#canvas-button');
+            const imageButton = $('#image-button');
+            var count = 0;
+            let messages = [];
+            let isLoading = false;
+
+            // Gemini API configuration
+            // const apiKey = "";
+            // const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            // Utility function for exponential backoff
+            const exponentialBackoff = async (func, retries = 5, delay = 1000) => {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        return await func();
+                    } catch (error) {
+                        if (i < retries - 1) {
+                            console.warn(`Retrying after ${delay}ms...`, error);
+                            await new Promise(res => setTimeout(res, delay));
+                            delay *= 2;
+                        } else {
+                            throw error;
+                        }
+                    }
+                }
+            };
+
+            // Function to scroll to the bottom of the messages container
+            const scrollToBottom = () => {
+                messagesContainer.scrollTop(messagesContainer.prop("scrollHeight"));
+            };
+
+            // Function to set loading state and disable/enable input/buttons
+            const setLoading = (state) => {
+                isLoading = state;
+                messageInput.prop('disabled', state);
+                sendButton.prop('disabled', state);
+                summarizeButton.prop('disabled', state);
+                rewriteButton.prop('disabled', state);
+                creativeButton.prop('disabled', state);
+                translateButton.prop('disabled', state);
+                elaborateButton.prop('disabled', state);
+                sentimentButton.prop('disabled', state);
+                followUpButton.prop('disabled', state);
+                attachButton.prop('disabled', state);
+                deepResearchButton.prop('disabled', state);
+                canvasButton.prop('disabled', state);
+                imageButton.prop('disabled', state);
+
+                if (state) {
+                    loadingIndicator.removeClass('hidden');
+                } else {
+                    loadingIndicator.addClass('hidden');
+                }
+            };
+
+            // Function to display a message with a typing animation
+            const displayMessage = (sender, text) => {
+                count++;
+                // Re-select the initial message element each time to ensure it exists
+                const initialMessage = $('#initial-message');
+
+                // Check if the initial message element exists
+                if (initialMessage.length) {
+                    initialMessage.remove();
+                }
+                const messageDiv = $('<div></div>').addClass(`flex ${sender === 'user' ? 'justify-end' : 'justify-start ai-message' + count}`);
+
+                const messageBubble = $('<div></div>').addClass(`max-w-xs sm:max-w-md lg:max-w-lg p-3 rounded-xl shadow-md ${sender === 'user'
+                    ? 'bg-blue-500 text-white rounded-br-none user-message'
+                    : 'bg-white text-gray-800 rounded-bl-none typing-animation'
+                    }`);
+                messageDiv.append(messageBubble);
+                loadingIndicator.before(messageDiv);
+
+                if (sender === 'user') {
+                    messageBubble.text(text);
+                    scrollToBottom();
+                } else {
+                    typeText(messageBubble, text);
+                    //alert("type function is done!")
+                    if (image_url == true) {
+                        const messageDiv = $('<div></div>').addClass(`flex ${sender === 'user' ? 'justify-end' : 'justify-start ai-message' + count}`);
+
+                        const messageBubble = $('<div></div>').addClass(`max-w-xs sm:max-w-md lg:max-w-lg p-3 rounded-xl shadow-md ${sender === 'user'
+                            ? 'bg-blue-500 text-white rounded-br-none user-message'
+                            : 'bg-white text-gray-800 rounded-bl-none'
+                            }`);
+                        messageBubble.append(`<div><img src="{{ url_for('static',filename='img/chart.png') }}" alt=""></div>`)
+                        messageDiv.append(messageBubble);
+                        loadingIndicator.before(messageDiv);
+                        image_url = false
+                        console.log("function entered! : " + count)
+                    }
+                }
+            };
+
+            // New function to handle the typing effect
+            const typeText = (element, text) => {
+                let i = 0;
+                const typingInterval = setInterval(() => {
+                    if (i < text.length) {
+                        element.text(element.text() + text.charAt(i));
+                        i++;
+                        scrollToBottom();
+                    } else {
+                        clearInterval(typingInterval);
+                        element.css('border-right', 'none');
+                    }
+                }, 50);
+            };
+
+            //<========== for file ================>
+            async function getResponsewithfile(user_message, file) {
+                var formData = new FormData();
+                formData.append("user_message", user_message);
+                formData.append("file", file);
+                setLoading(true);
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: '/chat',
+                        type: 'POST',
+                        data: formData,
+                        processData:false,
+                        contentType:false,
+                        success: function (response) {
+                            console.log("Success!");
+                            setLoading(false);
+                            resolve(response['response']);
+                            if (response.image_url) {
+                                image_url = true
+                                window.location.href = 'http://127.0.0.1:5003/download'
+                            }
+                            // this will go to await
+                        },
+                        error: function (response) {
+                            alert("ERROR!");
+                            console.log("Error!");
+                            setLoading(false);
+                            reject('ERROR!');  // this will go to catch block (optional)
+                        }
+                    });
+                });
+            }
+
+
+            //<============ for data only ===========>
+
+            async function getResponse(user_message, file) {
+                setLoading(true);
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: '/chat',
+                        type: 'POST',
+                        data: { user_message: user_message },
+                        success: function (response) {
+                            console.log("Success!");
+                            setLoading(false);
+                            resolve(response['response']);
+                            if (response.image_url) {
+                                image_url = true
+                                window.location.href = 'http://127.0.0.1:5003/download'
+                            }
+                            // this will go to await
+                        },
+                        error: function (response) {
+                            alert("ERROR!");
+                            console.log("Error!");
+                            setLoading(false);
+                            reject('ERROR!');  // this will go to catch block (optional)
+                        }
+                    });
+                });
+            }
+
+            // Modify the call to `displayMessage` in your `handleSendMessage` function
+            const handleSendMessage = async () => {
+                const userMessageText = messageInput.val().trim();
+                if (userMessageText) {
+                    displayMessage('user', userMessageText);
+                    messages.push({ sender: 'user', text: userMessageText });
+                    messageInput.val('');
+                    if(file)
+                    {
+                        var aiResponseText = await getResponsewithfile(userMessageText,file);
+                    }
+                    else{
+                        var aiResponseText = await getResponse(userMessageText);
+                    }
+
+                    displayMessage('ai', aiResponseText);
+                    messages.push({ sender: 'ai', text: aiResponseText });
+                }
+            };
+
+            // Also update the `handleSummarizeChat` function
+            const handleSummarizeChat = async () => {
+                const chatContent = messages.map(msg => `${msg.sender}: ${msg.text}`).join('\n');
+                const prompt = `Summarize the following conversation:\n\n${chatContent}`;
+
+                displayMessage('ai', "Summarizing the conversation... ✨");
+
+                const summary = await callGeminiApi(prompt);
+                // Remove the "Summarizing..." message bubble
+                if (messagesContainer.children().length > 1) {
+                    messagesContainer.children().eq(-2).remove();
+                }
+                // Display the summary with the typing animation
+                displayMessage('ai', `Summary: ${summary}`);
+            };
+
+            // Function to rewrite the last message
+            const handleRewriteLastMessage = async () => {
+                if (messages.length === 0) {
+                    displayMessage('ai', "There's no message to rewrite yet.");
+                    return;
+                }
+
+                const lastMessage = messages[messages.length - 1];
+                const prompt = `Please rewrite the following text in a different way, maintaining its original meaning:\n\n"${lastMessage.text}"`;
+
+                displayMessage('ai', "Rewriting the last message... ✨");
+                const rewrittenText = await callGeminiApi(prompt);
+                if (messagesContainer.children().length > 1) {
+                    messagesContainer.children().eq(-2).remove();
+                }
+                displayMessage('ai', `Rewritten: ${rewrittenText}`);
+            };
+
+            // Function to generate creative text
+            const handleGenerateCreativeText = async () => {
+                const creativeIdea = window.prompt("What creative text would you like me to generate? (e.g., 'a short poem about a cat', 'a funny story about a robot')");
+                if (!creativeIdea) {
+                    displayMessage('ai', "No creative idea provided.");
+                    return;
+                }
+
+                const prompt = `Generate: ${creativeIdea}`;
+
+                displayMessage('ai', `Generating "${creativeIdea}"... ✨`);
+                const generatedText = await callGeminiApi(prompt);
+                if (messagesContainer.children().length > 1) {
+                    messagesContainer.children().eq(-2).remove();
+                }
+                displayMessage('ai', `Creative Text: ${generatedText}`);
+            };
+
+            // Function to translate the last message
+            const handleTranslateMessage = async () => {
+                if (messages.length === 0) {
+                    displayMessage('ai', "There's no message to translate yet.");
+                    return;
+                }
+
+                const lastMessage = messages[messages.length - 1];
+                const targetLanguage = window.prompt("Enter the target language for translation (e.g., 'French', 'Spanish', 'German'):");
+                if (!targetLanguage) {
+                    displayMessage('ai', "No target language provided.");
+                    return;
+                }
+
+                const prompt = `Translate the following text into ${targetLanguage}:\n\n"${lastMessage.text}"`;
+
+                displayMessage('ai', `Translating to ${targetLanguage}... ✨`);
+                const translatedText = await callGeminiApi(prompt);
+                if (messagesContainer.children().length > 1) {
+                    messagesContainer.children().eq(-2).remove();
+                }
+                displayMessage('ai', `Translated (${targetLanguage}): ${translatedText}`);
+            };
+
+            // Function to elaborate on the last message
+            const handleElaborateMessage = async () => {
+                if (messages.length === 0) {
+                    displayMessage('ai', "There's no message to elaborate on yet.");
+                    return;
+                }
+
+                const lastMessage = messages[messages.length - 1];
+                const prompt = `Elaborate on the following text, providing more details or expanding on the topic:\n\n"${lastMessage.text}"`;
+
+                displayMessage('ai', "Elaborating on the last message... ✨");
+                const elaboratedText = await callGeminiApi(prompt);
+                if (messagesContainer.children().length > 1) {
+                    messagesContainer.children().eq(-2).remove();
+                }
+                displayMessage('ai', `Elaborated: ${elaboratedText}`);
+            };
+
+            // Function to analyze sentiment of the last message
+            const handleSentimentAnalysis = async () => {
+                if (messages.length === 0) {
+                    displayMessage('ai', "There's no message to analyze sentiment for yet.");
+                    return;
+                }
+
+                const lastMessage = messages[messages.length - 1];
+                const prompt = `Analyze the sentiment of the following text (e.g., positive, negative, neutral):\n\n"${lastMessage.text}"`;
+
+                displayMessage('ai', "Analyzing sentiment... ✨");
+                const sentiment = await callGeminiApi(prompt);
+                if (messagesContainer.children().length > 1) {
+                    messagesContainer.children().eq(-2).remove();
+                }
+                displayMessage('ai', `Sentiment: ${sentiment}`);
+            };
+
+            // Function to generate follow-up questions
+            const handleGenerateFollowUpQuestions = async () => {
+                if (messages.length === 0) {
+                    displayMessage('ai', "There's no message to generate follow-up questions for yet.");
+                    return;
+                }
+
+                const lastMessage = messages[messages.length - 1];
+                const prompt = `Based on the following text, suggest 3-5 relevant follow-up questions:\n\n"${lastMessage.text}"`;
+
+                displayMessage('ai', "Suggesting follow-up questions... ✨");
+                const questions = await callGeminiApi(prompt);
+                if (messagesContainer.children().length > 1) {
+                    messagesContainer.children().eq(-2).remove();
+                }
+                displayMessage('ai', `Follow-up Questions:\n${questions}`);
+            };
+
+            // --- Sidebar Functions ---
+            const toggleSidebar = () => {
+                sidebar.toggleClass('open');
+                mainContent.toggleClass('shifted', sidebar.hasClass('open'));
+            };
+
+            const handleNewChat = () => {
+                messages = [];
+                messagesContainer.empty();
+                const newInitialMessage = $('<div></div>').attr('id', 'initial-message').addClass('flex items-center justify-center h-full text-gray-500 text-lg').text('Start a conversation...');
+                messagesContainer.append(newInitialMessage).append(loadingIndicator);
+                initialMessage = newInitialMessage; // <-- Re-assign the variable here
+                messageInput.val('');
+                toggleSidebar();
+            };
+
+            const handleSettingsClick = () => {
+                displayMessage('ai', "Settings functionality coming soon!");
+                toggleSidebar();
+            };
+
+            // --- Attachment Button Functions ---
+            const toggleAttachmentOptions = () => {
+                attachmentOptions.toggleClass('hidden');
+                setTimeout(() => {
+                    attachmentOptions.toggleClass('open');
+                }, 10);
+            };
+
+            const handleDeepResearch = () => {
+                displayMessage('ai', "DeepResearch functionality is not yet implemented.");
+                toggleAttachmentOptions();
+            };
+
+            const handleCanvas = () => {
+                displayMessage('ai', "Canvas functionality is not yet implemented.");
+                toggleAttachmentOptions();
+            };
+
+            const handleImage = () => {
+                displayMessage('ai', "Image attachment functionality is not yet implemented.");
+                toggleAttachmentOptions();
+            };
+
+            // --- Event Listeners ---
+            sidebarToggleButton.on('click', toggleSidebar);
+            closeSidebarButton.on('click', toggleSidebar);
+            newChatButton.on('click', handleNewChat);
+            settingsButton.on('click', handleSettingsClick);
+
+            sendButton.on('click', handleSendMessage);
+            messageInput.on('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                }
+            });
+            summarizeButton.on('click', handleSummarizeChat);
+            rewriteButton.on('click', handleRewriteLastMessage);
+            creativeButton.on('click', handleGenerateCreativeText);
+            translateButton.on('click', handleTranslateMessage);
+            elaborateButton.on('click', handleElaborateMessage);
+            sentimentButton.on('click', handleSentimentAnalysis);
+            followUpButton.on('click', handleGenerateFollowUpQuestions);
+
+            // Attachment button listeners
+            attachButton.on('click', function () {
+                $("#fileInput").click();
+            });
+            $("#fileInput").on("change", function () {
+                file = this.files[0];
+                if (file) {
+                    console.log("Selected file:", file.name);
+                    // You can now upload it via AJAX or FormData
+                }
+            });
+            deepResearchButton.on('click', handleDeepResearch);
+            canvasButton.on('click', handleCanvas);
+            imageButton.on('click', handleImage);
+
+            // Adjust textarea height dynamically
+            messageInput.on('input', () => {
+                messageInput.css('height', 'auto');
+                messageInput.css('height', messageInput.prop('scrollHeight') + 'px');
+            });
+
+            // Initial check for desktop to keep sidebar open
+            if ($(window).width() >= 768) {
+                sidebar.addClass('open');
+                mainContent.addClass('shifted');
+            }
+        });
+    </script>
+</body>
+
+</html>

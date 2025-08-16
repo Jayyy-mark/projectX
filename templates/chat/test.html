@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Jarvis Voice (Humanized)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 16px; }
+    textarea { width: 100%; min-height: 140px; padding: 12px; border-radius: 12px; }
+    select, button { padding: 10px 14px; border-radius: 12px; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+    label { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Jarvis Voice (Humanized)</h1>
+
+  <div class="row">
+    <label for="voice">Voice</label>
+    <select id="voice"></select>
+    <label for="rate">Rate</label>
+    <input id="rate" type="range" min="0.8" max="1.2" step="0.01" value="0.92" />
+    <label for="pitch">Pitch</label>
+    <input id="pitch" type="range" min="0.8" max="1.2" step="0.01" value="0.95" />
+  </div>
+
+  <textarea id="text">System online. Hello, sir. All subsystems are nominal.</textarea>
+
+  <div class="row">
+    <button id="speak">Speak</button>
+    <button id="stop">Stop</button>
+  </div>
+
+  <script>
+    const synth = window.speechSynthesis;
+    const voiceSelect = document.getElementById('voice');
+    const rateInput = document.getElementById('rate');
+    const pitchInput = document.getElementById('pitch');
+    const textInput = document.getElementById('text');
+
+    const preferredNames = [
+      'Microsoft George', 'Microsoft Ryan', 'Daniel', 'Oliver', 
+      'Google UK English Male', 'Google UK English Premium Male'
+    ];
+
+    function populateVoices() {
+      const voices = synth.getVoices();
+      voiceSelect.innerHTML = '';
+      voices.sort((a, b) => a.name.localeCompare(b.name)).forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = `${v.name} — ${v.lang}${v.localService ? ' (local)' : ''}`;
+        voiceSelect.appendChild(opt);
+      });
+
+      // Auto-select preferred voice
+      for (const name of preferredNames) {
+        const v = voices.find(vo => vo.name.toLowerCase().includes(name.toLowerCase()));
+        if (v) { voiceSelect.value = v.name; break; }
+      }
+    }
+
+    populateVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    function speak(text) {
+      if (!text.trim()) return;
+      synth.cancel();
+
+      // Split text into sentences and phrases for natural pauses
+      const sentences = text.split(/([.!?])/).reduce((arr, s, i, a) => {
+        if (i % 2 === 0) arr.push((s + (a[i+1] || '')).trim());
+        return arr;
+      }, []);
+
+      function queue(i) {
+        if (i >= sentences.length) return;
+        const part = new SpeechSynthesisUtterance(sentences[i]);
+
+        const voices = synth.getVoices();
+        part.voice = voices.find(v => v.name === voiceSelect.value) || null;
+
+        // Add subtle human variation
+        part.rate = parseFloat(rateInput.value) * (0.95 + Math.random() * 0.1);
+        part.pitch = parseFloat(pitchInput.value) * (0.95 + Math.random() * 0.1);
+        part.volume = 1.0;
+
+        part.onend = () => setTimeout(() => queue(i + 1), 80 + Math.random() * 50);
+        synth.speak(part);
+      }
+
+      queue(0);
+    }
+
+    document.getElementById('speak').addEventListener('click', () => speak(textInput.value));
+    document.getElementById('stop').addEventListener('click', () => synth.cancel());
+  </script>
+</body>
+</html>
