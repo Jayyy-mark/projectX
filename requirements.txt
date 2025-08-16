@@ -11,11 +11,8 @@ beautifulsoup4
 playwright
 google-search-results
 gunicorn
-Flask
-langchain
 langchain-core
-langchain-google-genai
-openai
+
 
 
 
