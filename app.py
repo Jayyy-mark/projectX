@@ -203,6 +203,32 @@ def download_file():
 def test():
     return jsonify({'message' : 'hello from server'})
 
+
+@app.route("/ask", methods=['POST'])
+def chat():
+    if request.method == 'POST':
+        history_data = []
+
+        user_input = request.form['prompt']
+        uploaded_file=None
+        if "file" in request.files and request.files["file"].filename != "":
+        # File exists and is not empty
+            uploaded_file = request.files['file']
+            response = agent.invoke({"input" : user_input,"file_path":uploaded_file})
+            return jsonify({'response' : 'message sent successfully!'})
+        else:
+            response = agent.invoke({"input" : user_input})
+        #response_with_suggestions = add_related_suggestions(response, user_input)
+        if tool_used_flag["generate_image"]:
+            print("✅ Generate image tool was used")
+            tool_used_flag["generate_image"]=False
+            image = "static/img/chart.png"
+            return jsonify({'response' : response['output'], 'contain_img' : f"http://192.168.142.196:5003/static/img/chart.png"})
+        else:
+            print("❌ Generate image tool was NOT used")
+            return jsonify({'response' : response['output']})
+
+
 app.run(debug=True,host='0.0.0.0',port=5003)
 
 
