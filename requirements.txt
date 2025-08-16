@@ -9,3 +9,5 @@ flask-cors
 serpapi
 beautifulsoup4
 playwright
+gunicorn
+
