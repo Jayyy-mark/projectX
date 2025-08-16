@@ -15,7 +15,7 @@ from tools.Mail import send_mail
 from pydantic import BaseModel, Field
 from flask_cors import CORS
 from model.Gemini import GeminiChatbot
-from langchain.chat_models import ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 #create flask application
 app = Flask(__name__)
