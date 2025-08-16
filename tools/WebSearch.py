@@ -1,6 +1,8 @@
 import os
 import time
 from serpapi import GoogleSearch
+from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 class WebSearch:
 
@@ -62,9 +64,16 @@ class WebSearch:
         return "\n".join(formatted)
 
 
-web = WebSearch()
-
-print(web.search(query="weather taungoo"))
+def browse_and_extract(url):
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(url, timeout=60000)
+        content = page.content()
+        browser.close()
+    soup = BeautifulSoup(content, "html.parser")
+    text = ' '.join(soup.stripped_strings)
+    return text[:100000]
     
 
 
