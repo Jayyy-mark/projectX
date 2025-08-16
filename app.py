@@ -20,7 +20,7 @@ from model.Gemini import GeminiChatbot
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)
-STATIC_DIR = 'bot/static/img'
+STATIC_DIR = 'static/img'
 
 mysql = MySQL(app)
 
