@@ -9,5 +9,7 @@ flask-cors
 serpapi
 beautifulsoup4
 playwright
+google-search-results
 gunicorn
+
 
