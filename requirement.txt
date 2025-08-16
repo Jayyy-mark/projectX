@@ -1,0 +1,11 @@
+langchain
+langchain-google-genai
+huggingface-hub
+pydantic
+matplotlib
+flask
+flask-mysqldb
+flask-cors
+serpapi
+beautifulsoup4
+playwright
